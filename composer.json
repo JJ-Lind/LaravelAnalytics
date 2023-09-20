@@ -1,0 +1,26 @@
+{
+    "name": "wezanenterprises/laravelanalytics",
+    "description": "Simplify Google Analytics integration with Laravel using this wrapper package. Access Google Analytics data, track user interactions, and gain valuable insights effortlessly. Seamlessly integrate Google Analytics into your Laravel projects for data-driven decision-making and enhanced user experiences.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "package"
+    ],
+    "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jordan Lind",
+            "email": "j.lind@gmu.online"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "illuminate/support": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "wezanenterprises\\LaravelAnalytics\\": "src/"
+        }
+    }
+}
