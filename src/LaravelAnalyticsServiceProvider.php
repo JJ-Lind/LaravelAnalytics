@@ -1,9 +1,9 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics;
+namespace WezanEnterprises\LaravelAnalytics\src;
 
 use Illuminate\Support\ServiceProvider;
-use WezanEnterprises\LaravelAnalytics\src\Formatter;
+use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, OrderBy, Validator};
 
 /**
  * Class LaravelAnalyticsServiceProvider
@@ -29,5 +29,7 @@ class LaravelAnalyticsServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('formatter', fn() => [new Formatter]);
+        $this->app->singleton('order-by', fn() => [new OrderBy]);
+        $this->app->singleton('validator', fn() => [new Validator]);
     }
 }

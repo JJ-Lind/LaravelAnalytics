@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src;
+namespace WezanEnterprises\LaravelAnalytics\src\Utility;
 
 use Google\Analytics\Data\V1beta\{Dimension, Metric};
 
@@ -15,7 +15,7 @@ class Formatter {
      */
     public static function formatMetrics(array $metrics): array
     {
-        return collect($metrics)->map(fn(array $metric) => new Metric(['name' => $metric]))->toArray();
+        return collect($metrics)->map(fn(string $metric) => new Metric(['name' => $metric]))->toArray();
     }
 
     /**
@@ -27,6 +27,6 @@ class Formatter {
      */
     public static function formatDimensions(array $dimensions): array
     {
-        return collect($dimensions)->map(fn(array $dimension) => new Dimension(['name' => $dimension]))->toArray();
+        return collect($dimensions)->map(fn(string $dimension) => new Dimension(['name' => $dimension]))->toArray();
     }
 }

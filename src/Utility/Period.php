@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src\Period;
+namespace WezanEnterprises\LaravelAnalytics\src\Utility;
 
 use DateTimeInterface;
 use Google\Analytics\Data\V1beta\DateRange;
