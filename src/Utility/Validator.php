@@ -3,7 +3,7 @@
 namespace WezanEnterprises\LaravelAnalytics\src\Utility;
 
 use Illuminate\Support\Facades\Validator as LaravelValidator;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\MessageBag;
 
 class Validator {
 
@@ -310,11 +310,9 @@ class Validator {
      * @param int        $offset        The offset for pagination.
      * @param bool       $keepEmptyRows Whether to keep empty rows in the result.
      *
-     * @throws ValidationException
-     *
-     * @return void
+     * @return MessageBag|null
      */
-    public static function validate(string|int $propertyId, array $metrics, array $dimensions = [], int $maxResults = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false): void
+    public static function validate(string|int $propertyId, array $metrics, array $dimensions = [], int $maxResults = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false): MessageBag|null
     {
         // Create validator instance
         $validator = LaravelValidator::make([
@@ -328,9 +326,9 @@ class Validator {
         ], [
             'propertyId' => 'required|string|size:9',
             'metrics' => 'required|array',
-            'dimensions' => 'required|array',
+            'dimensions' => 'array',
             'maxResults' => 'required|integer|min:1',
-            'orderBy' => 'required|array',
+            'orderBy' => 'array',
             'offset' => 'required|integer|min:0',
             'keepEmptyRows' => 'required|boolean'
         ], [
@@ -361,10 +359,9 @@ class Validator {
             return true;
         });
 
-        // Check if validation fails
-        if ($validator->fails()) {
-            // Validation failed, throw a ValidationException with the errors
-            throw ValidationException::withMessages($validator->errors()->toArray());
-        }
+        // Check if validation fails. If validation failed, return an array containing the validation errors.
+        return $validator->fails()
+            ? $validator->errors()
+            : null;
     }
 }

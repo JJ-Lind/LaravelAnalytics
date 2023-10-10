@@ -4,7 +4,7 @@ namespace WezanEnterprises\LaravelAnalytics\src\Utility;
 
 use DateTimeInterface;
 use Google\Analytics\Data\V1beta\DateRange;
-use WezanEnterprises\LaravelAnalytics\src\Exceptions\InvalidPeriodException;
+use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidPeriodException;
 
 /**
  * Class Period
@@ -38,10 +38,10 @@ class Period {
      */
     public function __construct(DateTimeInterface $startDate, DateTimeInterface $endDate)
     {
+        $this->validate($startDate, $endDate);
+
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-
-        $this->validate($startDate, $endDate);
     }
 
     /**

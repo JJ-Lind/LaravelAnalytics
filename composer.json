@@ -23,5 +23,12 @@
         "psr-4": {
             "wezanenterprises\\LaravelAnalytics\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "wezanenterprises\\LaravelAnalyticsServiceProvider"
+            ]
+        }
     }
 }

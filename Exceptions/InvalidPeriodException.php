@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src\Exceptions;
+namespace WezanEnterprises\LaravelAnalytics\Exceptions;
 
 use Exception;
 
