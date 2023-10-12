@@ -5,8 +5,8 @@ namespace WezanEnterprises\LaravelAnalytics\src;
 use Exception;
 use Google\ApiCore\ApiException;
 use Illuminate\Support\Collection;
+use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
 use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, Period, Validator};
-use WezanEnterprises\LaravelAnalytics\Exceptions\ValidationException;
 
 /**
  * Class Report
@@ -39,7 +39,7 @@ final class Report extends Client {
     public function prepareReport(string $propertyId, array $metrics, Period $period = null, array $dimensions = [], int $maxResults = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false): self
     {
         if (!is_null($errors = Validator::validate($propertyId, $metrics, $dimensions, $maxResults, $orderBy, $offset, $keepEmptyRows))) {
-            throw new ValidationException($errors);
+            throw new InvalidInitializationException($errors);
         }
 
         $this->requestFields = [
@@ -52,7 +52,7 @@ final class Report extends Client {
             'limit' => $maxResults,
             'offset' => $offset,
             'orderBys' => $orderBy,
-            'keepEmptyRows' => $keepEmptyRows,
+            'keepEmptyRows' => $keepEmptyRows
         ];
 
         return $this;
@@ -72,18 +72,18 @@ final class Report extends Client {
 
         // Check if $this->requestFields is uninitialized
         if (empty($this->requestFields)) {
-            throw new Exception(__('Request fields have not been initialized. Please call prepareReport() before calling runReport().'));
+            throw new InvalidInitializationException(__('Request fields have not been initialized. Please call prepareReport() before calling runReport().'));
         }
 
         foreach ($this->client->runReport($this->requestFields)->getRows() as $row) {
             $rowResult = [];
 
             foreach ($row->getDimensionValues() as $i => $dimensionValue) {
-                $rowResult[$this->requestFields['dimensions'][$i]->getName()] = self::castValue($this->requestFields['dimensions'][$i]->getName(), $dimensionValue->getValue());
+                $rowResult[$this->requestFields['dimensions'][$i]->getName()] = $this->castValue($this->requestFields['dimensions'][$i]->getName(), $dimensionValue->getValue());
             }
 
             foreach ($row->getMetricValues() as $i => $metricValue) {
-                $rowResult[$this->requestFields['metrics'][$i]->getName()] = self::castValue($this->requestFields['metrics'][$i]->getName(), $metricValue->getValue());
+                $rowResult[$this->requestFields['metrics'][$i]->getName()] = $this->castValue($this->requestFields['metrics'][$i]->getName(), $metricValue->getValue());
             }
 
             $result->push($rowResult);
