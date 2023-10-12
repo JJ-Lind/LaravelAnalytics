@@ -19,6 +19,8 @@
   ],
   "require": {
     "php": "^7.4 || ^8.0",
+    "laravel/framework": "^10.0",
+    "nesbot/carbon": "^2.66",
     "google/analytics-data": "^0.11.1"
   },
   "minimum-stability": "dev",
@@ -30,8 +32,11 @@
   "extra": {
     "laravel": {
       "providers": [
-        "wezanenterprises\\LaravelAnalyticsServiceProvider"
-      ]
+        "wezanenterprises\\LaravelAnalytics\\src\\LaravelAnalyticsServiceProvider"
+      ],
+      "aliases": {
+        "Analytics": "wezanenterprises\\LaravelAnalytics\\src\\Facades\\Analytics"
+      }
     }
   }
 }
