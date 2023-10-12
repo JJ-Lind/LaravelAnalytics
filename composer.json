@@ -4,7 +4,10 @@
   "type": "library",
   "keywords": [
     "laravel",
-    "package"
+    "package",
+    "google analytics",
+    "analytics",
+    "google"
   ],
   "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
   "license": "MIT",
