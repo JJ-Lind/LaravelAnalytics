@@ -1,34 +1,35 @@
 {
-    "name": "wezanenterprises/laravelanalytics",
-    "description": "Simplify Google Analytics integration with Laravel using this wrapper package. Access Google Analytics data, track user interactions, and gain valuable insights effortlessly. Seamlessly integrate Google Analytics into your Laravel projects for data-driven decision-making and enhanced user experiences.",
-    "type": "library",
-    "keywords": [
-        "laravel",
-        "package"
-    ],
-    "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Jordan Lind",
-            "email": "j.lind@gmu.online"
-        }
-    ],
-    "require": {
-        "php": "^7.4",
-        "illuminate/support": "^8.0",
-        "google/analytics-data": "^0.11.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "wezanenterprises\\LaravelAnalytics\\": "src/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "wezanenterprises\\LaravelAnalyticsServiceProvider"
-            ]
-        }
+  "name": "wezanenterprises/laravelanalytics",
+  "description": "Simplify Google Analytics integration with Laravel using this wrapper package. Access Google Analytics data, track user interactions, and gain valuable insights effortlessly. Seamlessly integrate Google Analytics into your Laravel projects for data-driven decision-making and enhanced user experiences.",
+  "type": "library",
+  "keywords": [
+    "laravel",
+    "package"
+  ],
+  "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jordan Lind",
+      "email": "j.lind@gmu.online"
     }
+  ],
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "illuminate/support": "^8.0",
+    "google/analytics-data": "^0.11.1"
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "wezanenterprises\\LaravelAnalytics\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "wezanenterprises\\LaravelAnalyticsServiceProvider"
+      ]
+    }
+  }
 }
