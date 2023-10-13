@@ -26,16 +26,16 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "wezanenterprises\\LaravelAnalytics\\": "src/"
+      "wezanenterprises\\LaravelAnalytics\\": "src"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "wezanenterprises\\LaravelAnalytics\\src\\LaravelAnalyticsServiceProvider"
+        "WezanEnterprises\\LaravelAnalytics\\src\\LaravelAnalyticsServiceProvider"
       ],
       "aliases": {
-        "Analytics": "wezanenterprises\\LaravelAnalytics\\src\\Facades\\Analytics"
+        "Analytics": "WezanEnterprises\\LaravelAnalytics\\src\\Facades\\Analytics"
       }
     }
   }
