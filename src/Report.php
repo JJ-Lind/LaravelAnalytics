@@ -6,7 +6,6 @@ use Exception;
 use Google\ApiCore\ApiException;
 use Illuminate\Support\Collection;
 use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
-use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, Period, Validator};
 
 /**
  * Class Report

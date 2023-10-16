@@ -3,7 +3,6 @@
 namespace WezanEnterprises\LaravelAnalytics;
 
 use Illuminate\Support\ServiceProvider;
-use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, OrderBy, Validator};
 
 /**
  * Class LaravelAnalyticsServiceProvider
