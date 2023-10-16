@@ -26,7 +26,7 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "wezanenterprises\\LaravelAnalytics\\": "src"
+      "WezanEnterprises\\LaravelAnalytics\\": "src"
     }
   },
   "extra": {
