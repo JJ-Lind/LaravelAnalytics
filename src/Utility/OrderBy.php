@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src\Utility;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Google\Analytics\Data\V1beta\{OrderBy\DimensionOrderBy, OrderBy\MetricOrderBy, OrderBy as GoogleOrderBy};
 

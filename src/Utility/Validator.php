@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src\Utility;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Illuminate\Support\Facades\Validator as LaravelValidator;
 use Illuminate\Support\MessageBag;
