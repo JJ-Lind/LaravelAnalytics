@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Google\{Analytics\Data\V1beta\BetaAnalyticsDataClient, ApiCore\ValidationException};
 use Illuminate\Support\Carbon;

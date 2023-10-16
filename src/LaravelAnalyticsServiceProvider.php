@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Illuminate\Support\ServiceProvider;
 use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, OrderBy, Validator};
@@ -8,7 +8,7 @@ use WezanEnterprises\LaravelAnalytics\src\Utility\{Formatter, OrderBy, Validator
 /**
  * Class LaravelAnalyticsServiceProvider
  *
- * This service provider registers the `Formatter` class as a singleton in the Laravel service container.
+ * This service provider registers the `Formatter`, 'OrderBy' and 'Validator' class as singleton's in the Laravel service container.
  *
  * @package WezanEnterprises\LaravelAnalytics
  */

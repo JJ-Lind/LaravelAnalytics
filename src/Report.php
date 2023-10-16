@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Exception;
 use Google\ApiCore\ApiException;

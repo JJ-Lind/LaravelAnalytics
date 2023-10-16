@@ -1,6 +1,6 @@
 <?php
 
-namespace WezanEnterprises\LaravelAnalytics\src\Facades;
+namespace WezanEnterprises\LaravelAnalytics;
 
 use Illuminate\Support\Facades\Facade;
 
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @package WezanEnterprises\LaravelAnalytics\src\Facades
  */
-class Analytics extends Facade {
+class AnalyticsFacade extends Facade {
 
     /**
      * Get the registered name of the component.
