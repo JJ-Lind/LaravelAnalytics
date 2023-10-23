@@ -2,8 +2,7 @@
 
 namespace WezanEnterprises\LaravelAnalytics;
 
-use Google\{Analytics\Data\V1beta\BetaAnalyticsDataClient, ApiCore\ValidationException};
-use Illuminate\Support\Carbon;
+use Google\{Analytics\Data\V1beta\BatchRunReportsResponse, Analytics\Data\V1beta\BetaAnalyticsDataClient, Analytics\Data\V1beta\RunReportResponse, ApiCore\ApiException, ApiCore\ValidationException};
 
 /**
  * Class Client
@@ -29,26 +28,30 @@ class Client {
     public function __construct(array $clientData = [])
     {
         if (!isset($clientData['credentials'])) {
-            $clientData['credentials'] = storage_path('app/analytics/service-account-credentials.json');
+            $clientData['credentials'] = config('analytics.service_account_credentials_json', storage_path('app/analytics/service-account-credentials.json'));
         }
 
         $this->client = new BetaAnalyticsDataClient($clientData);
     }
 
     /**
-     * Cast a value based on the dimension or metric key.
-     *
-     * @param string $key   The key of the dimension or metric.
-     * @param string $value The value to cast.
-     *
-     * @return string|int|bool|Carbon
+     * @throws ApiException
      */
-    protected function castValue(string $key, string $value): string|int|bool|Carbon
+    public function runReport(array $runReportRequest): RunReportResponse
     {
-        return match ($key) {
-            'date' => Carbon::createFromFormat('Ymd', $value),
-            'visitors', 'pageViews', 'activeUsers', 'newUsers', 'screenPageViews', 'active1DayUsers', 'active7DayUsers', 'active28DayUsers', 'totalUsers' => (int) $value,
-            default => $value
-        };
+        return $this->client->runReport($runReportRequest);
+    }
+
+    /**
+     * @throws ApiException
+     */
+    public function runBatchReports(string $propertyId, array $runReportRequests): BatchRunReportsResponse
+    {
+        return $this->client->batchRunReports([
+            'property' => "properties/$propertyId",
+            'requests' => array_map(function (Report $runReportRequest) {
+                return Formatter::formatReportRequest($runReportRequest);
+            }, $runReportRequests)
+        ]);
     }
 }

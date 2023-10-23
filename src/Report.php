@@ -9,80 +9,85 @@ use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
 
 /**
  * Class Report
- *
- * This class provides an extension of the Client for fetching analytics data using Google Analytics Data API's report endpoint.
  */
-final class Report extends Client {
+class Report {
+
+    public string $propertyId;
+    public array $metrics;
+    public Period $period;
+    public array $dimensions;
+    public int $limit;
+    public array $orderBy;
+    public int $offset;
+    public bool $keepEmptyRows;
+    private bool $initialized = false;
 
     /**
-     * @var array Holds the request fields for the report.
-     */
-    private array $requestFields;
-
-    /**
-     * Prepares the report request.
-     *
-     * @param string      $propertyId    The ID of the property to fetch data for.
-     * @param string[]    $metrics       The metrics to include in the report.
-     * @param Period|null $period        The period for which to fetch data (optional).
-     * @param string[]    $dimensions    The dimensions to include in the report.
-     * @param int         $maxResults    The maximum number of results to return.
-     * @param string[]    $orderBy       The order in which to return results.
-     * @param int         $offset        The offset for pagination.
-     * @param bool        $keepEmptyRows Whether to keep empty rows in the result.
+     * @param string   $propertyId   The ID of the property to fetch data for.
+     * @param string[] $metrics      The metrics to include in the report.
+     * @param Period   $period       The date_ranges for which to fetch data.
+     * @param string[] $dimensions   The dimensions to include in the report.
+     * @param int      $limit        The maximum number of results to return.
+     * @param string[] $orderBy      The order in which to return results.
+     * @param int      $offset       The offset for pagination.
+     * @param bool     $keepEmptyRows Whether to keep empty rows in the result.
      *
      * @throws Exception
-     *
-     * @return $this
      */
-    public function prepareReport(string $propertyId, array $metrics, Period $period = null, array $dimensions = [], int $maxResults = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false): self
+    public function __construct(string $propertyId, array $metrics, Period $period, array $dimensions = [], int $limit = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false)
     {
-        if (!is_null($errors = Validator::validate($propertyId, $metrics, $dimensions, $maxResults, $orderBy, $offset, $keepEmptyRows))) {
+        if (!is_null($errors = Validator::validateReport($propertyId, $metrics, $dimensions, $limit, $orderBy, $offset, $keepEmptyRows))) {
             throw new InvalidInitializationException($errors);
         }
 
-        $this->requestFields = [
-            'property' => "properties/$propertyId",
-            'dateRanges' => $period
-                ? [$period->getDateRange()]
-                : [],
-            'metrics' => Formatter::formatMetrics($metrics),
-            'dimensions' => Formatter::formatDimensions($dimensions),
-            'limit' => $maxResults,
-            'offset' => $offset,
-            'orderBys' => $orderBy,
-            'keepEmptyRows' => $keepEmptyRows
-        ];
+        $this->propertyId = $propertyId;
+        $this->metrics = Formatter::formatMetrics($metrics);
+        $this->period = $period;
+        $this->dimensions = Formatter::formatDimensions($dimensions);
+        $this->limit = $limit;
+        $this->orderBy = $orderBy;
+        $this->offset = $offset;
+        $this->keepEmptyRows = $keepEmptyRows;
 
-        return $this;
+        $this->initialized = true;
     }
 
     /**
-     * Fetches analytics data for a property within a specified period.
+     * Fetches analytics data for a property within a specified date_ranges.
      *
+     * @param Client $client
+     *
+     * @throws InvalidInitializationException
      * @throws ApiException
-     * @throws Exception
-     *
      * @return Collection
      */
-    public function runReport(): Collection
+    public function runReport(Client $client): Collection
     {
         $result = collect();
 
         // Check if $this->requestFields is uninitialized
-        if (empty($this->requestFields)) {
+        if (!$this->initialized) {
             throw new InvalidInitializationException(__('Request fields have not been initialized. Please call prepareReport() before calling runReport().'));
         }
 
-        foreach ($this->client->runReport($this->requestFields)->getRows() as $row) {
+        foreach ($client->runReport([
+            'property' => "properties/$this->propertyId",
+            'date_ranges' => [$this->period->getDateRange()],
+            'metrics' => $this->metrics,
+            'dimensions' => $this->dimensions,
+            'limit' => $this->limit,
+            'offset' => $this->offset,
+            'order_by' => $this->orderBy,
+            'keep_empty_rows' => $this->keepEmptyRows
+        ])->getRows() as $row) {
             $rowResult = [];
 
             foreach ($row->getDimensionValues() as $i => $dimensionValue) {
-                $rowResult[$this->requestFields['dimensions'][$i]->getName()] = $this->castValue($this->requestFields['dimensions'][$i]->getName(), $dimensionValue->getValue());
+                $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue->getValue());
             }
 
             foreach ($row->getMetricValues() as $i => $metricValue) {
-                $rowResult[$this->requestFields['metrics'][$i]->getName()] = $this->castValue($this->requestFields['metrics'][$i]->getName(), $metricValue->getValue());
+                $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue->getValue());
             }
 
             $result->push($rowResult);
