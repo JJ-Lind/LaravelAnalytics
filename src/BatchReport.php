@@ -83,7 +83,7 @@ class BatchReport {
             $result['rowCount'] = $result['rows']->count();
             $result['totalRowCount'] = $report->getRowCount();
 
-            if (!empty($this->reports[$reportIndex]->metricAggregations)) {
+            if ((!empty($this->reports[$reportIndex]->metricAggregations)) && $report->getRowCount() > 0) {
                 $rowResult = [];
 
                 foreach ($this->reports[$reportIndex]->metrics as $i => $metric) {

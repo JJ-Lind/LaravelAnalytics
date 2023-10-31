@@ -99,7 +99,7 @@ class Report {
         $result['rowCount'] = $result['rows']->count();
         $result['totalRowCount'] = $reportResult->getRowCount();
 
-        if (!empty($this->metricAggregations)) {
+        if ((!empty($this->metricAggregations))  && $reportResult->getRowCount() > 0) {
             $rowResult = [];
 
             foreach ($this->metrics as $i => $metric) {
