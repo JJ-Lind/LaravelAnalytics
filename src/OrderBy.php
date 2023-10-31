@@ -9,7 +9,7 @@ use Google\Analytics\Data\V1beta\{OrderBy\DimensionOrderBy, OrderBy\MetricOrderB
  *
  * Provides methods for creating OrderBy objects for dimension and metric ordering.
  *
- * @package WezanEnterprises\LaravelAnalytics\src
+ * @package WezanEnterprises\LaravelAnalytics
  */
 class OrderBy
 {

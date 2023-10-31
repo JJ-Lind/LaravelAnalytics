@@ -8,6 +8,8 @@ use Google\{Analytics\Data\V1beta\BatchRunReportsResponse, Analytics\Data\V1beta
  * Class Client
  *
  * This class provides a client for fetching analytics data using Google Analytics Data API.
+ *
+ * @package WezanEnterprises\LaravelAnalytics
  */
 class Client {
 
@@ -37,9 +39,9 @@ class Client {
     /**
      * @throws ApiException
      */
-    public function runReport(array $runReportRequest): RunReportResponse
+    public function runReport(Report $runReportRequest): RunReportResponse
     {
-        return $this->client->runReport($runReportRequest);
+        return $this->client->runReport(Formatter::formatReportRequest($runReportRequest));
     }
 
     /**
@@ -50,7 +52,7 @@ class Client {
         return $this->client->batchRunReports([
             'property' => "properties/$propertyId",
             'requests' => array_map(function (Report $runReportRequest) {
-                return Formatter::formatReportRequest($runReportRequest);
+                return Formatter::formatBatchReportRequest($runReportRequest);
             }, $runReportRequests)
         ]);
     }

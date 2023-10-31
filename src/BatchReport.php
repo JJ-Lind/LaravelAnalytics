@@ -10,12 +10,15 @@ use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
  * Class Report
  *
  * This class provides an extension of the Google Analytics Data API client by batching multiple report requests into a single request.
+ *
+ * @package WezanEnterprises\LaravelAnalytics
  */
 class BatchReport {
 
     public string $property;
     public array $reports;
-    private bool $rowIndexnitialized = false;
+
+    protected bool $initialized = false;
 
     /**
      * @param string $property The ID of the property to fetch data for.

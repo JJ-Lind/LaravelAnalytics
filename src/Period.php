@@ -11,7 +11,7 @@ use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidPeriodException;
  *
  * Represents a time period defined by a start date and an end date.
  *
- * @package WezanEnterprises\LaravelAnalytics\src\Period
+ * @package WezanEnterprises\LaravelAnalytics
  */
 class Period {
 

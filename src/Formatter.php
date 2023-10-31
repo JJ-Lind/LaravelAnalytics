@@ -5,6 +5,13 @@ namespace WezanEnterprises\LaravelAnalytics;
 use Google\Analytics\Data\V1beta\{Dimension, Metric, RunReportRequest};
 use Illuminate\Support\Carbon;
 
+/**
+ * Class Formatter
+ *
+ * This class provides methods for formatting data for Google Analytics API requests.
+ *
+ * @package WezanEnterprises\LaravelAnalytics
+ */
 class Formatter {
 
     /**
@@ -12,7 +19,7 @@ class Formatter {
      *
      * @param array $metrics The metrics to format.
      *
-     * @return array
+     * @return Metric[]
      */
     public static function formatMetrics(array $metrics): array
     {
@@ -24,14 +31,21 @@ class Formatter {
      *
      * @param array $dimensions The dimensions to format.
      *
-     * @return array
+     * @return Dimension[]
      */
     public static function formatDimensions(array $dimensions): array
     {
         return collect($dimensions)->map(fn(string $dimension) => new Dimension(['name' => $dimension]))->toArray();
     }
 
-    public static function formatReportRequest(Report $report): RunReportRequest
+    /**
+     * Format a batch report request.
+     *
+     * @param Report $report The report to format.
+     *
+     * @return RunReportRequest
+     */
+    public static function formatBatchReportRequest(Report $report): RunReportRequest
     {
         return new RunReportRequest([
             'property' => "properties/$report->propertyId",
@@ -40,9 +54,50 @@ class Formatter {
             'dimensions' => $report->dimensions,
             'limit' => $report->limit,
             'offset' => $report->offset,
+            'metric_aggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),
             'order_bys' => $report->orderBy,
             'keep_empty_rows' => $report->keepEmptyRows
         ]);
+    }
+
+    /**
+     * Get the metric aggregation code.
+     *
+     * @param string $metricAggregation The metric aggregation type.
+     *
+     * @return int
+     */
+    private static function getMetricAggregation(string $metricAggregation): int
+    {
+        return match ($metricAggregation) {
+            'TOTAL' => 1,
+            'COUNT' => 4,
+            'MINIMUM' => 5,
+            'MAXIMUM' => 6,
+            default => 0
+        };
+    }
+
+    /**
+     * Format a report request.
+     *
+     * @param Report $report The report to format.
+     *
+     * @return array
+     */
+    public static function formatReportRequest(Report $report): array
+    {
+        return [
+            'property' => "properties/$report->propertyId",
+            'dateRanges' => [$report->period->getDateRange()],
+            'metrics' => $report->metrics,
+            'dimensions' => $report->dimensions,
+            'limit' => $report->limit,
+            'offset' => $report->offset,
+            'metricAggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),
+            'orderBy' => $report->orderBy,
+            'keepEmptyRows' => $report->keepEmptyRows
+        ];
     }
 
     /**

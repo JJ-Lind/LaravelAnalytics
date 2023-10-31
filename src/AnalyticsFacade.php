@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * This is the facade class for interacting with the Laravel Analytics package.
  * It provides a simplified and expressive API for accessing analytics functionality.
  *
- * @package WezanEnterprises\LaravelAnalytics\src\Facades
+ * @package WezanEnterprises\LaravelAnalytics
  */
 class AnalyticsFacade extends Facade {
 

@@ -2,10 +2,14 @@
 
 namespace WezanEnterprises\LaravelAnalytics;
 
-use Illuminate\Support\Facades\Validator as LaravelValidator;
-use Illuminate\Support\MessageBag;
+use Illuminate\Support\{Facades\Validator as LaravelValidator, MessageBag};
 use InvalidArgumentException;
 
+/*
+ * Class Validator
+ *
+ * @package WezanEnterprises\LaravelAnalytics
+ */
 class Validator {
 
     /**
@@ -300,6 +304,13 @@ class Validator {
         'yearWeek'
     ];
 
+    protected const AVAILABLE_METRIC_AGGREGATIONS = [
+        'TOTAL',
+        'COUNT',
+        'MAXIMUM',
+        'MINIMUM'
+    ];
+
     /**
      * Validate a batch of reports for a Google Analytics property.
      *
@@ -319,10 +330,10 @@ class Validator {
         // Initialize an empty array to collect errors.
         $batchErrors = [];
 
-         /** Iterate through the reports. @var Report $report */
+        /** Iterate through the reports. @var Report $report */
         foreach ($reports as $index => $report) {
             // Validate each report using the validateReport function.
-            $reportErrors = self::validateReport($propertyId, $report->metrics, $report->dimensions, $report->limit, $report->orderBy, $report->offset, $report->keepEmptyRows);
+            $reportErrors = self::validateReport($propertyId, $report->metrics, $report->dimensions, $report->limit, $report->orderBy, $report->metricAggregations, $report->offset, $report->keepEmptyRows);
 
             // If validation failed for this report, add it to the batchErrors array.
             if ($reportErrors) {
@@ -339,17 +350,18 @@ class Validator {
     /**
      * Validate input parameters.
      *
-     * @param string|int $propertyId    The ID of the property to fetch data for.
-     * @param string[]   $metrics       The metrics to include in the report.
-     * @param string[]   $dimensions    The dimensions to include in the report.
-     * @param int        $limit         The maximum number of results to return.
-     * @param string[]   $orderBy       The order in which to return results.
-     * @param int        $offset        The offset for pagination.
+     * @param string|int $propertyId The ID of the property to fetch data for.
+     * @param string[]   $metrics The metrics to include in the report.
+     * @param string[]   $dimensions The dimensions to include in the report.
+     * @param int        $limit The maximum number of results to return.
+     * @param string[]   $orderBy The order in which to return results.
+     * @param string[]   $metricAggregations The metrics in which to return aggregated results.
+     * @param int        $offset The offset for pagination.
      * @param bool       $keepEmptyRows Whether to keep empty rows in the result.
      *
      * @return MessageBag|null
      */
-    public static function validateReport(string|int $propertyId, array $metrics, array $dimensions = [], int $limit = 10, array $orderBy = [], int $offset = 0, bool $keepEmptyRows = false): MessageBag|null
+    public static function validateReport(string|int $propertyId, array $metrics, array $dimensions = [], int $limit = 10, array $orderBy = [], array $metricAggregations = [], int $offset = 0, bool $keepEmptyRows = false): MessageBag|null
     {
         // Create validator instance
         $validator = LaravelValidator::make([
@@ -358,6 +370,7 @@ class Validator {
             'dimensions' => $dimensions,
             'limit' => $limit,
             'order_by' => $orderBy,
+            'metricAggregations' => $metricAggregations,
             'offset' => $offset,
             'keep_empty_rows' => $keepEmptyRows
         ], [
@@ -366,6 +379,7 @@ class Validator {
             'dimensions' => 'array',
             'limit' => 'required|integer|min:1',
             'order_by' => 'array',
+            'metricAggregations' => 'array',
             'offset' => 'required|integer|min:0',
             'keep_empty_rows' => 'required|boolean'
         ], [
@@ -395,6 +409,19 @@ class Validator {
 
             return true;
         });
+
+        if (!empty($metricAggregations)) {
+            LaravelValidator::extend('valid_metric_aggregations', function (string $attribute, array $value): bool {
+                foreach ($value as $metricAggregation) {
+                    // Check if it's a valid metric aggregation
+                    if (!in_array($metricAggregation, self::AVAILABLE_METRIC_AGGREGATIONS)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        }
 
         // Check if validation fails. If validation failed, return an array containing the validation errors.
         return $validator->fails()
