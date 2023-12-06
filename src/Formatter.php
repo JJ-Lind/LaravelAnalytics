@@ -47,16 +47,17 @@ class Formatter {
      * Format a batch report request.
      *
      * @param Report $report The report to format.
+     * @param BetaAnalyticsDataClient|Client $client
      *
      * @return RunReportRequest
      */
-    public static function formatBatchReportRequest(Report $report): RunReportRequest
+    public static function formatBatchReportRequest(Report $report, BetaAnalyticsDataClient|Client $client): RunReportRequest
     {
         return new RunReportRequest([
             'property' => "properties/$report->propertyId",
-            'metrics' => $report->metrics,
+            'metrics' => self::formatMetrics($report->metrics, $client),
+            'dimensions' => self::formatDimensions($report->dimensions, $client),
             'date_ranges' => [$report->period->getDateRange()],
-            'dimensions' => $report->dimensions,
             'limit' => $report->limit,
             'offset' => $report->offset,
             'metric_aggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),

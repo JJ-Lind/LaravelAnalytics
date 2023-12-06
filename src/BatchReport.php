@@ -71,11 +71,11 @@ class BatchReport {
                     $rowResult = [];
 
                     foreach ($row->getDimensionValues() as $rowIndex => $dimensionValue) {
-                        $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]->getName()] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex]->getName(), $dimensionValue->getValue());
+                        $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex], $dimensionValue->getValue());
                     }
 
                     foreach ($row->getMetricValues() as $rowIndex => $metricValue) {
-                        $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]->getName()] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex]->getName(), $metricValue->getValue());
+                        $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex], $metricValue->getValue());
                     }
 
                     $result['rows']->push($rowResult);
@@ -89,7 +89,7 @@ class BatchReport {
 
                     foreach ($this->reports[$reportIndex]->metrics as $i => $metric) {
                         foreach ($this->reports[$reportIndex]->metricAggregations as $metricAggregation) {
-                            $rowResult[$metric->getName()][$metricAggregation] = match ($metricAggregation) {
+                            $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
                                 'TOTAL' => $report->getTotals()[0]->getMetricValues()[$i]->getValue(),
                                 'MINIMUM' => $report->getMinimums()[0]->getMetricValues()[$i]->getValue(),
                                 'MAXIMUM' => $report->getMaximums()[0]->getMetricValues()[$i]->getValue()
