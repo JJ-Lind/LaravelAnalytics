@@ -1,42 +1,43 @@
 {
-  "name": "wezanenterprises/laravelanalytics",
-  "description": "Simplify Google Analytics integration with Laravel using this wrapper package. Access Google Analytics data, track user interactions, and gain valuable insights effortlessly. Seamlessly integrate Google Analytics into your Laravel projects for data-driven decision-making and enhanced user experiences.",
-  "type": "library",
-  "keywords": [
-    "laravel",
-    "package",
-    "google analytics",
-    "analytics",
-    "google"
-  ],
-  "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Jordan Lind",
-      "email": "j.lind@gmu.online"
+    "name": "wezanenterprises/laravelanalytics",
+    "description": "Simplify Google Analytics integration with Laravel using this wrapper package. Access Google Analytics data, track user interactions, and gain valuable insights effortlessly. Seamlessly integrate Google Analytics into your Laravel projects for data-driven decision-making and enhanced user experiences.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "package",
+        "google analytics",
+        "analytics",
+        "google"
+    ],
+    "homepage": "https://github.com/wezanenterprises/LaravelAnalytics",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jordan Lind",
+            "email": "j.lind@gmu.online"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "laravel/framework": "^8.0 || ^9.0 || ^10.0",
+        "nesbot/carbon": "^2.66",
+        "google/analytics-data": "^0.11.1",
+        "google/apiclient": "^2.15"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "WezanEnterprises\\LaravelAnalytics\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "WezanEnterprises\\LaravelAnalytics\\LaravelAnalyticsServiceProvider"
+            ],
+            "aliases": {
+                "Analytics": "AnalyticsFacade"
+            }
+        }
     }
-  ],
-  "require": {
-    "php": "^7.4 || ^8.0",
-    "laravel/framework": "^8.0 || ^9.0 || ^10.0",
-    "nesbot/carbon": "^2.66",
-    "google/analytics-data": "^0.11.1"
-  },
-  "minimum-stability": "dev",
-  "autoload": {
-    "psr-4": {
-      "WezanEnterprises\\LaravelAnalytics\\": "src"
-    }
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "WezanEnterprises\\LaravelAnalytics\\LaravelAnalyticsServiceProvider"
-      ],
-      "aliases": {
-        "Analytics": "AnalyticsFacade"
-      }
-    }
-  }
 }

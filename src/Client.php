@@ -2,7 +2,9 @@
 
 namespace WezanEnterprises\LaravelAnalytics;
 
-use Google\{Analytics\Data\V1beta\BatchRunReportsResponse, Analytics\Data\V1beta\BetaAnalyticsDataClient, Analytics\Data\V1beta\RunReportResponse, ApiCore\ApiException, ApiCore\ValidationException};
+use Exception;
+use Google\{Analytics\Data\V1beta\BetaAnalyticsDataClient, ApiCore\ValidationException};
+use Google_Client;
 
 /**
  * Class Client
@@ -16,44 +18,20 @@ class Client {
     /**
      * The instance of the Google Analytics Data API client.
      *
-     * @var BetaAnalyticsDataClient
+     * @var Google_Client|BetaAnalyticsDataClient
      */
-    protected BetaAnalyticsDataClient $client;
+    protected Google_Client|BetaAnalyticsDataClient $client;
 
     /**
      * Client constructor.
      *
-     * @param array $clientData Configuration data for the client.
+     * @param Google_Client|array|null $client Configuration data for the client.
      *
      * @throws ValidationException
+     * @throws Exception
      */
-    public function __construct(array $clientData = [])
+    public function __construct(Google_Client|array $client = null)
     {
-        if (!isset($clientData['credentials'])) {
-            $clientData['credentials'] = config('analytics.service_account_credentials_json', storage_path('app/analytics/service-account-credentials.json'));
-        }
 
-        $this->client = new BetaAnalyticsDataClient($clientData);
-    }
-
-    /**
-     * @throws ApiException
-     */
-    public function runReport(Report $runReportRequest): RunReportResponse
-    {
-        return $this->client->runReport(Formatter::formatReportRequest($runReportRequest));
-    }
-
-    /**
-     * @throws ApiException
-     */
-    public function runBatchReports(string $propertyId, array $runReportRequests): BatchRunReportsResponse
-    {
-        return $this->client->batchRunReports([
-            'property' => "properties/$propertyId",
-            'requests' => array_map(function (Report $runReportRequest) {
-                return Formatter::formatBatchReportRequest($runReportRequest);
-            }, $runReportRequests)
-        ]);
     }
 }

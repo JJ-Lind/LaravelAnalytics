@@ -5,6 +5,7 @@ namespace WezanEnterprises\LaravelAnalytics;
 use Exception;
 use Google\Analytics\Data\V1beta\Row;
 use Google\ApiCore\ApiException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
 
@@ -46,9 +47,9 @@ class Report {
         }
 
         $this->propertyId = $propertyId;
-        $this->metrics = Formatter::formatMetrics($metrics);
+        $this->metrics = $metrics;
         $this->period = $period;
-        $this->dimensions = Formatter::formatDimensions($dimensions);
+        $this->dimensions = $dimensions;
         $this->limit = $limit;
         $this->orderBy = $orderBy;
         $this->metricAggregations = $metricAggregations;
@@ -61,13 +62,14 @@ class Report {
     /**
      * Fetches analytics data for a property within a specified date_ranges.
      *
-     * @param Client $client
+     * @param BetaAnalyticsClient|GoogleApiClient $client
      *
      * @throws InvalidInitializationException
      * @throws ApiException
+     * @throws GuzzleException
      * @return Collection
      */
-    public function runReport(Client $client): Collection
+    public function runReport(BetaAnalyticsClient|GoogleApiClient $client): Collection
     {
         $result = collect([
             'rows' => collect(),
@@ -81,38 +83,57 @@ class Report {
             throw new InvalidInitializationException(__('Request fields have not been initialized. Please call prepareReport() before calling runReport().'));
         }
 
-        /** @var Row $row */
-        foreach (($reportResult = $client->runReport($this))->getRows() as $row) {
-            $rowResult = [];
+        if ($client instanceof BetaAnalyticsClient) {
+            /** @var Row $row */
+            foreach (($reportResult = $client->runReport($this))->getRows() as $row) {
+                $rowResult = [];
 
-            foreach ($row->getDimensionValues() as $i => $dimensionValue) {
-                $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue->getValue());
-            }
-
-            foreach ($row->getMetricValues() as $i => $metricValue) {
-                $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue->getValue());
-            }
-
-            $result['rows']->push($rowResult);
-        }
-
-        $result['rowCount'] = $result['rows']->count();
-        $result['totalRowCount'] = $reportResult->getRowCount();
-
-        if ((!empty($this->metricAggregations))  && $reportResult->getRowCount() > 0) {
-            $rowResult = [];
-
-            foreach ($this->metrics as $i => $metric) {
-                foreach ($this->metricAggregations as $metricAggregation) {
-                    $rowResult[$metric->getName()][$metricAggregation] = match ($metricAggregation) {
-                        'TOTAL' => $reportResult->getTotals()[0]->getMetricValues()[$i]->getValue(),
-                        'MINIMUM' => $reportResult->getMinimums()[0]->getMetricValues()[$i]->getValue(),
-                        'MAXIMUM' => $reportResult->getMaximums()[0]->getMetricValues()[$i]->getValue()
-                    };
+                foreach ($row->getDimensionValues() as $i => $dimensionValue) {
+                    $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue->getValue());
                 }
+
+                foreach ($row->getMetricValues() as $i => $metricValue) {
+                    $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue->getValue());
+                }
+
+                $result['rows']->push($rowResult);
             }
 
-            $result['metricAggregations']->push($rowResult);
+            $result['rowCount'] = $result['rows']->count();
+            $result['totalRowCount'] = $reportResult->getRowCount();
+
+            if ((!empty($this->metricAggregations))  && $reportResult->getRowCount() > 0) {
+                $rowResult = [];
+
+                foreach ($this->metrics as $i => $metric) {
+                    foreach ($this->metricAggregations as $metricAggregation) {
+                        $rowResult[$metric->getName()][$metricAggregation] = match ($metricAggregation) {
+                            'TOTAL' => $reportResult->getTotals()[0]->getMetricValues()[$i]->getValue(),
+                            'MINIMUM' => $reportResult->getMinimums()[0]->getMetricValues()[$i]->getValue(),
+                            'MAXIMUM' => $reportResult->getMaximums()[0]->getMetricValues()[$i]->getValue()
+                        };
+                    }
+                }
+
+                $result['metricAggregations']->push($rowResult);
+            }
+        } else {
+            $reportResult = $client->runReport($this);
+
+            /** @var GoogleApiClient $client */
+            foreach ($reportResult['rows'] as $row) {
+                $rowResult = [];
+
+                foreach ($row['dimensionValues'] as $i => $dimensionValue) {
+                    $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue);
+                }
+
+                foreach ($row['metricValues'] as $i => $metricValue) {
+                    $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue);
+                }
+
+                $result['rows']->push($rowResult);
+            }
         }
 
         return $result;

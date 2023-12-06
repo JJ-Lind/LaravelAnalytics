@@ -2,8 +2,9 @@
 
 namespace WezanEnterprises\LaravelAnalytics;
 
-use Google\Analytics\Data\V1beta\{Dimension, Metric, RunReportRequest};
+use Google\Analytics\Data\V1beta\{BetaAnalyticsDataClient, Dimension, Metric, RunReportRequest};
 use Illuminate\Support\Carbon;
+use Google\Client;
 
 /**
  * Class Formatter
@@ -19,11 +20,13 @@ class Formatter {
      *
      * @param array $metrics The metrics to format.
      *
-     * @return Metric[]
+     * @return Metric[]|array
      */
-    public static function formatMetrics(array $metrics): array
+    public static function formatMetrics(array $metrics, BetaAnalyticsDataClient|Client $client): array
     {
-        return collect($metrics)->map(fn(string $metric) => new Metric(['name' => $metric]))->toArray();
+        return $client instanceof BetaAnalyticsDataClient
+            ? collect($metrics)->map(fn(string $metric) => new Metric(['name' => $metric]))->toArray()
+            : array_map(fn(string $metric) => ['name' => $metric], $metrics);
     }
 
     /**
@@ -31,11 +34,13 @@ class Formatter {
      *
      * @param array $dimensions The dimensions to format.
      *
-     * @return Dimension[]
+     * @return Dimension[]|array
      */
-    public static function formatDimensions(array $dimensions): array
+    public static function formatDimensions(array $dimensions, BetaAnalyticsDataClient|Client $client): array
     {
-        return collect($dimensions)->map(fn(string $dimension) => new Dimension(['name' => $dimension]))->toArray();
+        return $client instanceof BetaAnalyticsDataClient
+            ? collect($dimensions)->map(fn(string $dimension) => new Dimension(['name' => $dimension]))->toArray()
+            : array_map(fn(string $dimension) => ['name' => $dimension], $dimensions);
     }
 
     /**
@@ -81,21 +86,29 @@ class Formatter {
     /**
      * Format a report request.
      *
-     * @param Report $report The report to format.
+     * @param Report                         $report The report to format.
+     * @param BetaAnalyticsDataClient|Client $client
      *
      * @return array
      */
-    public static function formatReportRequest(Report $report): array
+    public static function formatReportRequest(Report $report, BetaAnalyticsDataClient|Client $client): array
     {
         return [
             'property' => "properties/$report->propertyId",
-            'dateRanges' => [$report->period->getDateRange()],
-            'metrics' => $report->metrics,
-            'dimensions' => $report->dimensions,
+            'dateRanges' => $client instanceof BetaAnalyticsDataClient
+                ? [$report->period->getDateRange()]
+                : [
+                    [
+                        'startDate' => $report->period->getStartDate()->format('Y-m-d'),
+                        'endDate' => $report->period->getEndDate()->format('Y-m-d')
+                    ]
+                ],
+            'metrics' => self::formatMetrics($report->metrics, $client),
+            'dimensions' => self::formatDimensions($report->dimensions, $client),
             'limit' => $report->limit,
             'offset' => $report->offset,
             'metricAggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),
-            'orderBy' => $report->orderBy,
+            'orderBys' => $report->orderBy,
             'keepEmptyRows' => $report->keepEmptyRows
         ];
     }

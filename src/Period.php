@@ -52,7 +52,7 @@ class Period {
      *
      * @throws InvalidPeriodException Thrown if the start date is after the end date.
      */
-    private function validate(DateTimeInterface $startDate, DateTimeInterface $endDate)
+    private function validate(DateTimeInterface $startDate, DateTimeInterface $endDate): void
     {
         if ($startDate > $endDate) {
             throw new InvalidPeriodException("Start date `{$startDate->format('Y-m-d')}` cannot be after end date `{$endDate->format('Y-m-d')}`.");
@@ -70,5 +70,15 @@ class Period {
             'start_date' => $this->startDate->format('Y-m-d'),
             'end_date' => $this->endDate->format('Y-m-d'),
         ]);
+    }
+
+    public function getStartDate(): DateTimeInterface
+    {
+        return $this->startDate;
+    }
+
+    public function getEndDate(): DateTimeInterface
+    {
+        return $this->endDate;
     }
 }
