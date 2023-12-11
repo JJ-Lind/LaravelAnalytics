@@ -89,11 +89,11 @@ class Report {
                 $rowResult = [];
 
                 foreach ($row->getDimensionValues() as $i => $dimensionValue) {
-                    $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue->getValue());
+                    $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue->getValue());
                 }
 
                 foreach ($row->getMetricValues() as $i => $metricValue) {
-                    $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue->getValue());
+                    $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue->getValue());
                 }
 
                 $result['rows']->push($rowResult);
@@ -102,7 +102,7 @@ class Report {
             $result['rowCount'] = $result['rows']->count();
             $result['totalRowCount'] = $reportResult->getRowCount();
 
-            if ((!empty($this->metricAggregations))  && $reportResult->getRowCount() > 0) {
+            if ((!empty($this->metricAggregations)) && $reportResult->getRowCount() > 0) {
                 $rowResult = [];
 
                 foreach ($this->metrics as $i => $metric) {
@@ -117,7 +117,8 @@ class Report {
 
                 $result['metricAggregations']->push($rowResult);
             }
-        } else {
+        }
+        else {
             $reportResult = $client->runReport($this);
 
             /** @var GoogleApiClient $client */
@@ -125,14 +126,34 @@ class Report {
                 $rowResult = [];
 
                 foreach ($row['dimensionValues'] as $i => $dimensionValue) {
-                    $rowResult[$this->dimensions[$i]->getName()] = Formatter::castValue($this->dimensions[$i]->getName(), $dimensionValue);
+                    $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
                 }
 
                 foreach ($row['metricValues'] as $i => $metricValue) {
-                    $rowResult[$this->metrics[$i]->getName()] = Formatter::castValue($this->metrics[$i]->getName(), $metricValue);
+                    $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue['value']);
                 }
 
                 $result['rows']->push($rowResult);
+            }
+
+            $result['rowCount'] = count($result['rows']);
+            $result['totalRowCount'] = $reportResult['rowCount'];
+            $result['metadata'] = $reportResult['metadata'];
+
+            if ((!empty($this->metricAggregations)) && $result['totalRowCount'] > 0) {
+                $rowResult = [];
+
+                foreach ($this->metrics as $i => $metric) {
+                    foreach ($this->metricAggregations as $metricAggregation) {
+                        $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
+                            'TOTAL' => $reportResult['totals'][0]['metricValues'][$i]['value'],
+                            'MINIMUM' => $reportResult['minimums'][0]['metricValues'][$i]['value'],
+                            'MAXIMUM' => $reportResult['maximums'][0]['metricValues'][$i]['value']
+                        };
+                    }
+                }
+
+                $result['metricAggregations']->push($rowResult);
             }
         }
 

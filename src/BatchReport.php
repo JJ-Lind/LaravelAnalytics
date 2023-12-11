@@ -4,6 +4,7 @@ namespace WezanEnterprises\LaravelAnalytics;
 
 use Google\Analytics\Data\V1beta\Row;
 use Google\ApiCore\ApiException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use WezanEnterprises\LaravelAnalytics\Exceptions\InvalidInitializationException;
 
@@ -45,6 +46,7 @@ class BatchReport {
      *
      * @throws InvalidInitializationException
      * @throws ApiException
+     * @throws GuzzleException
      *
      * @return Collection
      */
@@ -102,8 +104,52 @@ class BatchReport {
 
                 $batchedResults->put($reportIndex, $result);
             }
-        } else {
+        }
+        else {
+            foreach ($client->runBatchReports($this->property, $this->reports)['reports'] as $reportIndex => $report) {
+                $result = collect([
+                    'rows' => collect(),
+                    'metricAggregations' => collect(),
+                    'rowCount' => null,
+                    'totalRowCount' => null
+                ]);
 
+                foreach ($report['rows'] as $row) {
+                    $rowResult = [];
+
+                    foreach ($row['dimensionValues'] as $rowIndex => $dimensionValue) {
+                        $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex], $dimensionValue['value']);
+                    }
+
+                    foreach ($row['metricValues'] as $rowIndex => $metricValue) {
+                        $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex], $metricValue['value']);
+                    }
+
+                    $result['rows']->push($rowResult);
+                }
+
+                $result['rowCount'] = count($report['rows']);
+                $result['totalRowCount'] = $report['rowCount'];
+                $result['metadata'] = $report['metadata'];
+
+                if ((!empty($this->metricAggregations)) && $result['totalRowCount'] > 0) {
+                    $rowResult = [];
+
+                    foreach ($this->reports[$reportIndex]->metrics as $i => $metric) {
+                        foreach ($this->reports[$reportIndex]->metricAggregations as $metricAggregation) {
+                            $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
+                                'TOTAL' => $result['totals'][0]['metricValues'][$i]['value'],
+                                'MINIMUM' => $result['minimums'][0]['metricValues'][$i]['value'],
+                                'MAXIMUM' => $result['maximums'][0]['metricValues'][$i]['value']
+                            };
+                        }
+                    }
+
+                    $result['metricAggregations']->push($rowResult);
+                }
+
+                $batchedResults->put($reportIndex, $result);
+            }
         }
 
         return $batchedResults;

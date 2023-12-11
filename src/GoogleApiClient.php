@@ -4,19 +4,25 @@ namespace WezanEnterprises\LaravelAnalytics;
 
 use Exception;
 use Google_Client;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\{Client as GuzzleClient, Exception\GuzzleException};
 
 class GoogleApiClient implements AnalyticsClientInterface {
 
     public const SCOPE_ANALYZE = 'https://www.googleapis.com/auth/analytics';
     public const SCOPE_READ = 'https://www.googleapis.com/auth/analytics.readonly';
+
     /**
      * The instance of the Google API Client.
      *
      * @var Google_Client
      */
     protected Google_Client $googleClient;
+
+    /**
+     * The instance of the Guzzle HTTP Client.
+     *
+     * @var GuzzleClient
+     */
     protected GuzzleClient $guzzleClient;
 
     /**
@@ -38,28 +44,32 @@ class GoogleApiClient implements AnalyticsClientInterface {
     }
 
     /**
-     * @param Report $runReportRequest
+     * Run a report request.
+     *
+     * @param Report $runReportRequest The report request to run.
      *
      * @throws GuzzleException
-     * @return array
+     * @return array The response data as an array.
      */
     public function runReport(Report $runReportRequest): array
     {
         return json_decode($this->guzzleClient->post("https://analyticsdata.googleapis.com/v1beta/properties/$runReportRequest->propertyId:runReport", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->googleClient->getAccessToken()['access_token'],
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
-            'json' => Formatter::formatReportRequest($runReportRequest, $this->googleClient)
+            'json' => Formatter::formatReportRequest($runReportRequest, $this->googleClient),
         ])->getBody(), true);
     }
 
     /**
-     * @param string $propertyId
-     * @param array  $runReportRequests
+     * Run batch reports for a specified property.
+     *
+     * @param string $propertyId        The ID of the property for which to run reports.
+     * @param array  $runReportRequests An array of report requests to run in the batch.
      *
      * @throws GuzzleException
-     * @return array
+     * @return array The response data as an array.
      */
     public function runBatchReports(string $propertyId, array $runReportRequests): array
     {
@@ -72,8 +82,8 @@ class GoogleApiClient implements AnalyticsClientInterface {
                 'property' => $propertyId,
                 'requests' => array_map(function (Report $runReportRequest) {
                     return Formatter::formatBatchReportRequest($runReportRequest, $this->googleClient);
-                }, $runReportRequests)
-            ]
+                }, $runReportRequests),
+            ],
         ])->getBody(), true);
     }
 }

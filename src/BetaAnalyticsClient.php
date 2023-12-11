@@ -31,7 +31,13 @@ class BetaAnalyticsClient implements AnalyticsClientInterface {
     }
 
     /**
+     * Runs a single report request.
+     *
+     * @param Report $runReportRequest The report request to run.
+     *
      * @throws ApiException
+     *
+     * @return RunReportResponse The response containing the report data.
      */
     public function runReport(Report $runReportRequest): RunReportResponse
     {
@@ -39,7 +45,14 @@ class BetaAnalyticsClient implements AnalyticsClientInterface {
     }
 
     /**
+     * Runs multiple report requests in a batch for a specified property.
+     *
+     * @param string $propertyId        The ID of the property for which to run reports.
+     * @param array  $runReportRequests An array of report requests to run in the batch.
+     *
      * @throws ApiException
+     *
+     * @return BatchRunReportsResponse The response containing batched report data.
      */
     public function runBatchReports(string $propertyId, array $runReportRequests): BatchRunReportsResponse
     {
