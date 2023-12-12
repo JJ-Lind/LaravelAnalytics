@@ -18,7 +18,7 @@ class Report {
 
     public string $propertyId;
     public array $metrics;
-    public Period $period;
+    public array $periods;
     public array $dimensions;
     public int $limit;
     public array $orderBy;
@@ -30,7 +30,7 @@ class Report {
     /**
      * @param string   $propertyId         The ID of the property to fetch data for.
      * @param string[] $metrics            The metrics to include in the report.
-     * @param Period   $period             The date_ranges for which to fetch data.
+     * @param Period[] $periods            The date_ranges for which to fetch data.
      * @param string[] $dimensions         The dimensions to include in the report.
      * @param int      $limit              The maximum number of results to return.
      * @param string[] $orderBy            The order in which to return results.
@@ -40,7 +40,7 @@ class Report {
      *
      * @throws Exception
      */
-    public function __construct(string $propertyId, array $metrics, Period $period, array $dimensions = [], int $limit = 10, array $orderBy = [], array $metricAggregations = [], int $offset = 0, bool $keepEmptyRows = false)
+    public function __construct(string $propertyId, array $metrics, array $periods, array $dimensions = [], int $limit = 10, array $orderBy = [], array $metricAggregations = [], int $offset = 0, bool $keepEmptyRows = false)
     {
         if (!is_null($errors = Validator::validateReport($propertyId, $metrics, $dimensions, $limit, $orderBy, $metricAggregations, $offset, $keepEmptyRows))) {
             throw new InvalidInitializationException($errors);
@@ -48,7 +48,7 @@ class Report {
 
         $this->propertyId = $propertyId;
         $this->metrics = $metrics;
-        $this->period = $period;
+        $this->periods = $periods;
         $this->dimensions = $dimensions;
         $this->limit = $limit;
         $this->orderBy = $orderBy;
@@ -75,8 +75,13 @@ class Report {
             'rows' => collect(),
             'metricAggregations' => collect(),
             'rowCount' => null,
-            'totalRowCount' => null
+            'totalRowCount' => null,
+            'metadata' => collect()
         ]);
+
+        foreach ($this->periods as $dateRangeIndex => $period) {
+            $result['rows'][$dateRangeIndex] = collect();
+        }
 
         // Check if $this->requestFields is uninitialized
         if (!$this->initialized) {
@@ -86,9 +91,15 @@ class Report {
         if ($client instanceof BetaAnalyticsClient) {
             /** @var Row $row */
             foreach (($reportResult = $client->runReport($this))->getRows() as $row) {
+                $dateRangeIndex ??= 0;
                 $rowResult = [];
 
                 foreach ($row->getDimensionValues() as $i => $dimensionValue) {
+                    if ((count($this->periods) > 1) && $i === count($row->getDimensionValues()) - 1) {
+                        $dateRangeIndex = (int) substr($dimensionValue->getValue(), - 1);
+                        break;
+                    }
+
                     $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue->getValue());
                 }
 
@@ -96,18 +107,23 @@ class Report {
                     $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue->getValue());
                 }
 
-                $result['rows']->push($rowResult);
+                $result['rows'][$dateRangeIndex]->push($rowResult);
             }
 
-            $result['rowCount'] = $result['rows']->count();
+            $result['rowCount'] = count($reportResult->getRows());
             $result['totalRowCount'] = $reportResult->getRowCount();
+            $result['metadata'] = [
+                'currencyCode' => ($metadata = $reportResult->getMetadata())->getCurrencyCode(),
+                'timeZone' => $metadata->getTimeZone(),
+                'subjectToThresholding' => $metadata->getSubjectToThresholding()
+            ];
 
             if ((!empty($this->metricAggregations)) && $reportResult->getRowCount() > 0) {
                 $rowResult = [];
 
                 foreach ($this->metrics as $i => $metric) {
                     foreach ($this->metricAggregations as $metricAggregation) {
-                        $rowResult[$metric->getName()][$metricAggregation] = match ($metricAggregation) {
+                        $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
                             'TOTAL' => $reportResult->getTotals()[0]->getMetricValues()[$i]->getValue(),
                             'MINIMUM' => $reportResult->getMinimums()[0]->getMetricValues()[$i]->getValue(),
                             'MAXIMUM' => $reportResult->getMaximums()[0]->getMetricValues()[$i]->getValue()

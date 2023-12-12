@@ -19,9 +19,9 @@ class Formatter {
      * Format a batch report request.
      *
      * @param Report                         $report The report to format.
-     * @param BetaAnalyticsDataClient|Client $client
+     * @param BetaAnalyticsDataClient|Client $client The Analytics client.
      *
-     * @return array|RunReportRequest
+     * @return array|RunReportRequest The formatted batch report request.
      */
     public static function formatBatchReportRequest(Report $report, BetaAnalyticsDataClient|Client $client): array|RunReportRequest
     {
@@ -30,7 +30,7 @@ class Formatter {
                 'property' => "properties/$report->propertyId",
                 'metrics' => self::formatMetrics($report->metrics, $client),
                 'dimensions' => self::formatDimensions($report->dimensions, $client),
-                'date_ranges' => [$report->period->getDateRange()],
+                'date_ranges' => self::formatDateRanges($report, $client),
                 'limit' => $report->limit,
                 'offset' => $report->offset,
                 'metric_aggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),
@@ -44,9 +44,9 @@ class Formatter {
      * Format metrics for API request.
      *
      * @param array                          $metrics The metrics to format.
-     * @param BetaAnalyticsDataClient|Client $client
+     * @param BetaAnalyticsDataClient|Client $client  The Analytics client.
      *
-     * @return array
+     * @return array The formatted metrics.
      */
     public static function formatMetrics(array $metrics, BetaAnalyticsDataClient|Client $client): array
     {
@@ -59,9 +59,9 @@ class Formatter {
      * Format dimensions for API request.
      *
      * @param array                          $dimensions The dimensions to format.
-     * @param BetaAnalyticsDataClient|Client $client
+     * @param BetaAnalyticsDataClient|Client $client     The Analytics client.
      *
-     * @return array
+     * @return array The formatted dimensions.
      */
     public static function formatDimensions(array $dimensions, BetaAnalyticsDataClient|Client $client): array
     {
@@ -71,11 +71,33 @@ class Formatter {
     }
 
     /**
+     * Format date ranges for API request.
+     *
+     * @param Report                         $report The report containing date ranges.
+     * @param BetaAnalyticsDataClient|Client $client The Analytics client.
+     *
+     * @return array The formatted date ranges.
+     */
+    private static function formatDateRanges(Report $report, BetaAnalyticsDataClient|Client $client): array
+    {
+        foreach ($report->periods as $period) {
+            $response[] = $client instanceof BetaAnalyticsDataClient
+                ? $period->getDateRange()
+                : [
+                    'startDate' => $period->getStartDate()->format('Y-m-d'),
+                    'endDate' => $period->getEndDate()->format('Y-m-d')
+                ];
+        }
+
+        return $response ?? [];
+    }
+
+    /**
      * Get the metric aggregation code.
      *
      * @param string $metricAggregation The metric aggregation type.
      *
-     * @return int
+     * @return int The metric aggregation code.
      */
     private static function getMetricAggregation(string $metricAggregation): int
     {
@@ -92,15 +114,16 @@ class Formatter {
      * Format a report request.
      *
      * @param Report                         $report The report to format.
-     * @param BetaAnalyticsDataClient|Client $client
+     * @param BetaAnalyticsDataClient|Client $client The Analytics client.
      *
-     * @return array
+     * @return array The formatted report request.
      */
     public static function formatReportRequest(Report $report, BetaAnalyticsDataClient|Client $client): array
     {
         $response = [
             'metrics' => self::formatMetrics($report->metrics, $client),
             'dimensions' => self::formatDimensions($report->dimensions, $client),
+            'dateRanges' => self::formatDateRanges($report, $client),
             'limit' => $report->limit,
             'offset' => $report->offset,
             'metricAggregations' => array_map(fn(string $metricAggregation) => self::getMetricAggregation($metricAggregation), $report->metricAggregations),
@@ -110,15 +133,6 @@ class Formatter {
 
         if ($client instanceof BetaAnalyticsDataClient) {
             $response['property'] = "properties/$report->propertyId";
-            $response['dateRanges'] = [$report->period->getDateRange()];
-        }
-        else {
-            $response['dateRanges'] = [
-                [
-                    'startDate' => $report->period->getStartDate()->format('Y-m-d'),
-                    'endDate' => $report->period->getEndDate()->format('Y-m-d')
-                ]
-            ];
         }
 
         return $response;
@@ -130,7 +144,7 @@ class Formatter {
      * @param string $key   The key of the dimension or metric.
      * @param string $value The value to cast.
      *
-     * @return string|int|bool|Carbon
+     * @return string|int|bool|Carbon The cast value.
      */
     public static function castValue(string $key, string $value): string|int|bool|Carbon
     {

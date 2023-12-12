@@ -65,14 +65,25 @@ class BatchReport {
                     'rows' => collect(),
                     'metricAggregations' => collect(),
                     'rowCount' => null,
-                    'totalRowCount' => null
+                    'totalRowCount' => null,
+                    'metadata' => collect()
                 ]);
+
+                foreach ($this->reports[$reportIndex]->periods as $dateRangeIndex => $period) {
+                    $result['rows'][$dateRangeIndex] = collect();
+                }
 
                 /** @var Row $row */
                 foreach ($report->getRows() as $row) {
+                    $dateRangeIndex ??= 0;
                     $rowResult = [];
 
                     foreach ($row->getDimensionValues() as $rowIndex => $dimensionValue) {
+                        if ((count($this->reports[$reportIndex]->periods) > 1) && $rowIndex === count($row->getDimensionValues()) - 1) {
+                            $dateRangeIndex = (int) substr($dimensionValue->getValue(), - 1);
+                            break;
+                        }
+
                         $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex], $dimensionValue->getValue());
                     }
 
@@ -80,11 +91,16 @@ class BatchReport {
                         $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex], $metricValue->getValue());
                     }
 
-                    $result['rows']->push($rowResult);
+                    $result['rows'][$dateRangeIndex]->push($rowResult);
                 }
 
-                $result['rowCount'] = $result['rows']->count();
+                $result['rowCount'] = count($report->getRows());
                 $result['totalRowCount'] = $report->getRowCount();
+                $result['metadata'] = [
+                    'currencyCode' => ($metadata = $report->getMetadata())->getCurrencyCode(),
+                    'timeZone' => $metadata->getTimeZone(),
+                    'subjectToThresholding' => $metadata->getSubjectToThresholding()
+                ];
 
                 if ((!empty($this->reports[$reportIndex]->metricAggregations)) && $report->getRowCount() > 0) {
                     $rowResult = [];
