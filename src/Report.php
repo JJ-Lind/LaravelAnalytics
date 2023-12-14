@@ -135,21 +135,23 @@ class Report {
             }
         }
         else {
+            /** @var GoogleApiClient $client */
             $reportResult = $client->runReport($this);
 
-            /** @var GoogleApiClient $client */
-            foreach ($reportResult['rows'] as $row) {
-                $rowResult = [];
+            if (isset($reportResult['rows'])) {
+                foreach ($reportResult['rows'] as $row) {
+                    $rowResult = [];
 
-                foreach ($row['dimensionValues'] as $i => $dimensionValue) {
-                    $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
+                    foreach ($row['dimensionValues'] as $i => $dimensionValue) {
+                        $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
+                    }
+
+                    foreach ($row['metricValues'] as $i => $metricValue) {
+                        $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue['value']);
+                    }
+
+                    $result['rows']->push($rowResult);
                 }
-
-                foreach ($row['metricValues'] as $i => $metricValue) {
-                    $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue['value']);
-                }
-
-                $result['rows']->push($rowResult);
             }
 
             $result['rowCount'] = count($result['rows']);

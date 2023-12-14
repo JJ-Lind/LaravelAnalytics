@@ -3,7 +3,7 @@
 namespace WezanEnterprises\LaravelAnalytics;
 
 use Exception;
-use Google_Client;
+use Google\Client;
 use GuzzleHttp\{Client as GuzzleClient, Exception\GuzzleException};
 
 class GoogleApiClient implements AnalyticsClientInterface {
@@ -14,9 +14,9 @@ class GoogleApiClient implements AnalyticsClientInterface {
     /**
      * The instance of the Google API Client.
      *
-     * @var Google_Client
+     * @var Client
      */
-    protected Google_Client $googleClient;
+    protected Client $googleClient;
 
     /**
      * The instance of the Guzzle HTTP Client.
@@ -28,11 +28,11 @@ class GoogleApiClient implements AnalyticsClientInterface {
     /**
      * Client constructor.
      *
-     * @param Google_Client $googleClient
+     * @param Client $googleClient
      *
      * @throws Exception
      */
-    public function __construct(Google_Client $googleClient)
+    public function __construct(Client $googleClient)
     {
         // Ensure access token is not null
         if (is_null($googleClient->getAccessToken())) {

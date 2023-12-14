@@ -130,18 +130,20 @@ class BatchReport {
                     'totalRowCount' => null
                 ]);
 
-                foreach ($report['rows'] as $row) {
-                    $rowResult = [];
+                if (isset($report['rows'])) {
+                    foreach ($report['rows'] as $row) {
+                        $rowResult = [];
 
-                    foreach ($row['dimensionValues'] as $rowIndex => $dimensionValue) {
-                        $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex], $dimensionValue['value']);
+                        foreach ($row['dimensionValues'] as $rowIndex => $dimensionValue) {
+                            $rowResult[$this->reports[$reportIndex]->dimensions[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->dimensions[$rowIndex], $dimensionValue['value']);
+                        }
+
+                        foreach ($row['metricValues'] as $rowIndex => $metricValue) {
+                            $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex], $metricValue['value']);
+                        }
+
+                        $result['rows']->push($rowResult);
                     }
-
-                    foreach ($row['metricValues'] as $rowIndex => $metricValue) {
-                        $rowResult[$this->reports[$reportIndex]->metrics[$rowIndex]] = Formatter::castValue($this->reports[$reportIndex]->metrics[$rowIndex], $metricValue['value']);
-                    }
-
-                    $result['rows']->push($rowResult);
                 }
 
                 $result['rowCount'] = count($report['rows']);
