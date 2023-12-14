@@ -74,8 +74,8 @@ class Report {
         $result = collect([
             'rows' => collect(),
             'metricAggregations' => collect(),
-            'rowCount' => null,
-            'totalRowCount' => null,
+            'rowCount' => 0,
+            'totalRowCount' => 0,
             'metadata' => collect()
         ]);
 
@@ -152,11 +152,12 @@ class Report {
 
                     $result['rows']->push($rowResult);
                 }
+
+                $result['rowCount'] = count($result['rows']);
             }
 
-            $result['rowCount'] = count($result['rows']);
-            $result['totalRowCount'] = $reportResult['rowCount'];
-            $result['metadata'] = $reportResult['metadata'];
+            $result['totalRowCount'] = $reportResult['rowCount'] ?? 0;
+            $result['metadata'] = $reportResult['metadata'] ?? [];
 
             if ((!empty($this->metricAggregations)) && $result['totalRowCount'] > 0) {
                 $rowResult = [];

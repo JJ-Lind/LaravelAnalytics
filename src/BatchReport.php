@@ -64,8 +64,8 @@ class BatchReport {
                 $result = collect([
                     'rows' => collect(),
                     'metricAggregations' => collect(),
-                    'rowCount' => null,
-                    'totalRowCount' => null,
+                    'rowCount' => 0,
+                    'totalRowCount' => 0,
                     'metadata' => collect()
                 ]);
 
@@ -144,11 +144,12 @@ class BatchReport {
 
                         $result['rows']->push($rowResult);
                     }
+
+                    $result['rowCount'] = count($report['rows']);
                 }
 
-                $result['rowCount'] = count($report['rows']);
-                $result['totalRowCount'] = $report['rowCount'];
-                $result['metadata'] = $report['metadata'];
+                $result['totalRowCount'] = $report['rowCount'] ?? 0;
+                $result['metadata'] = $report['metadata'] ?? [];
 
                 if ((!empty($this->metricAggregations)) && $result['totalRowCount'] > 0) {
                     $rowResult = [];
