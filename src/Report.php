@@ -81,6 +81,7 @@ class Report {
 
         foreach ($this->periods as $dateRangeIndex => $period) {
             $result['rows'][$dateRangeIndex] = collect();
+            $result['metricAggregations'][$dateRangeIndex] = collect();
         }
 
         // Check if $this->requestFields is uninitialized
@@ -150,7 +151,7 @@ class Report {
                         $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue['value']);
                     }
 
-                    $result['rows']->push($rowResult);
+                     $result['rows'][$dateRangeIndex]->push($rowResult);
                 }
 
                 $result['rowCount'] = count($result['rows']);
@@ -171,7 +172,7 @@ class Report {
                     }
                 }
 
-                $result['metricAggregations']->push($rowResult);
+                $result['metricAggregations'][$dateRangeIndex]->push($rowResult);
             }
         }
 
