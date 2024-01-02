@@ -56,7 +56,8 @@ class GoogleApiClient implements AnalyticsClientInterface {
         return json_decode($this->guzzleClient->post("https://analyticsdata.googleapis.com/v1beta/properties/$runReportRequest->propertyId:runReport", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->googleClient->getAccessToken()['access_token'],
-                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
             ],
             'json' => Formatter::formatReportRequest($runReportRequest, $this->googleClient),
         ])->getBody(), true);
@@ -76,7 +77,7 @@ class GoogleApiClient implements AnalyticsClientInterface {
         return json_decode($this->guzzleClient->post("https://analyticsdata.googleapis.com/v1beta/properties/$propertyId:batchRunReports", [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->googleClient->getAccessToken()['access_token'],
-                'Content-Type' => 'application/json',
+                'Content-Type' => 'application/json'
             ],
             'json' => [
                 'property' => $propertyId,
