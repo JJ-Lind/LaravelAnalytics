@@ -144,6 +144,11 @@ class Report {
                     $rowResult = [];
 
                     foreach ($row['dimensionValues'] as $i => $dimensionValue) {
+                        if ((count($this->periods) > 1) && $i === count($row['dimensionValues']) - 1) {
+                            $dateRangeIndex = (int) substr($dimensionValue['value'], - 1);
+                            break;
+                        }
+
                         $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
                     }
 
@@ -151,7 +156,7 @@ class Report {
                         $rowResult[$this->metrics[$i]] = Formatter::castValue($this->metrics[$i], $metricValue['value']);
                     }
 
-                     $result['rows'][$dateRangeIndex]->push($rowResult);
+                    $result['rows'][$dateRangeIndex]->push($rowResult);
                 }
 
                 $result['rowCount'] = count($result['rows']);
@@ -172,7 +177,7 @@ class Report {
                     }
                 }
 
-                $result['metricAggregations'][$dateRangeIndex]->push($rowResult);
+                $result['metricAggregations']->push($rowResult);
             }
         }
 
