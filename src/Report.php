@@ -171,9 +171,15 @@ class Report {
                     foreach ($this->metrics as $i => $metric) {
                         foreach ($this->metricAggregations as $metricAggregation) {
                             $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
-                                'TOTAL' => $reportResult['totals'][$dateRangeIndex]['metricValues'][$i]['value'],
-                                'MINIMUM' => $reportResult['minimums'][$dateRangeIndex]['metricValues'][$i]['value'],
-                                'MAXIMUM' => $reportResult['maximums'][$dateRangeIndex]['metricValues'][$i]['value']
+                                'TOTAL' => !empty($reportResult['totals'][$dateRangeIndex])
+                                    ? $reportResult['totals'][$dateRangeIndex]['metricValues'][$i]['value']
+                                    : 0,
+                                'MINIMUM' => !empty($reportResult['minimums'][$dateRangeIndex])
+                                    ? $reportResult['minimums'][$dateRangeIndex]['metricValues'][$i]['value']
+                                    : 0,
+                                'MAXIMUM' => !empty($reportResult['maximums'][$dateRangeIndex])
+                                    ? $reportResult['maximums'][$dateRangeIndex]['metricValues'][$i]['value']
+                                    : 0
                             };
                         }
                     }
