@@ -165,19 +165,21 @@ class Report {
             }
 
             if ((!empty($this->metricAggregations)) && $result['totalRowCount'] > 0) {
-                $rowResult = [];
+                for ($dateRangeIndex = 0; $dateRangeIndex < count($this->periods); $dateRangeIndex ++) {
+                    $rowResult = [];
 
-                foreach ($this->metrics as $i => $metric) {
-                    foreach ($this->metricAggregations as $metricAggregation) {
-                        $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
-                            'TOTAL' => $reportResult['totals'][0]['metricValues'][$i]['value'],
-                            'MINIMUM' => $reportResult['minimums'][0]['metricValues'][$i]['value'],
-                            'MAXIMUM' => $reportResult['maximums'][0]['metricValues'][$i]['value']
-                        };
+                    foreach ($this->metrics as $i => $metric) {
+                        foreach ($this->metricAggregations as $metricAggregation) {
+                            $rowResult[$metric][$metricAggregation] = match ($metricAggregation) {
+                                'TOTAL' => $reportResult['totals'][$dateRangeIndex]['metricValues'][$i]['value'],
+                                'MINIMUM' => $reportResult['minimums'][$dateRangeIndex]['metricValues'][$i]['value'],
+                                'MAXIMUM' => $reportResult['maximums'][$dateRangeIndex]['metricValues'][$i]['value']
+                            };
+                        }
                     }
-                }
 
-                $result['metricAggregations']->push($rowResult);
+                    $result['metricAggregations'][$dateRangeIndex]->push($rowResult);
+                }
             }
         }
 
