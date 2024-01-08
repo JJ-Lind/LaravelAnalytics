@@ -143,13 +143,15 @@ class Report {
                 foreach ($reportResult['rows'] as $row) {
                     $rowResult = [];
 
-                    foreach ($row['dimensionValues'] as $i => $dimensionValue) {
-                        if ((count($this->periods) > 1) && $i === count($row['dimensionValues']) - 1) {
-                            $dateRangeIndex = (int) substr($dimensionValue['value'], - 1);
-                            break;
-                        }
+                    if (isset($row['dimensionValues'])) {
+                        foreach ($row['dimensionValues'] as $i => $dimensionValue) {
+                            if ((count($this->periods) > 1) && $i === count($row['dimensionValues']) - 1) {
+                                $dateRangeIndex = (int) substr($dimensionValue['value'], - 1);
+                                break;
+                            }
 
-                        $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
+                            $rowResult[$this->dimensions[$i]] = Formatter::castValue($this->dimensions[$i], $dimensionValue['value']);
+                        }
                     }
 
                     foreach ($row['metricValues'] as $i => $metricValue) {
